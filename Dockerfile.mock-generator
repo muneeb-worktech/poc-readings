@@ -1,0 +1,29 @@
+# Dockerfile for the mock data generator service
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+
+# Install dependencies
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile --production; \
+  elif [ -f package-lock.json ]; then npm ci --only=production; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile --prod; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
+
+# Copy the mock generator script and required dependencies
+COPY scripts/mock-data-generator.ts ./scripts/
+COPY lib/ ./lib/
+COPY tsconfig.json ./
+
+# Install TypeScript and ts-node for running the TypeScript script
+RUN npm install -g typescript ts-node @types/node
+
+# Compile TypeScript with proper settings (override noEmit)
+RUN npx tsc scripts/mock-data-generator.ts --outDir dist --target es2020 --module commonjs --esModuleInterop --skipLibCheck --declaration false --removeComments
+
+# Run the mock data generator
+CMD ["node", "dist/mock-data-generator.js"]

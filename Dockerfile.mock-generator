@@ -18,9 +18,13 @@ RUN \
 COPY scripts/mock-data-generator.ts ./scripts/
 COPY lib/ ./lib/
 COPY tsconfig.json ./
+# Copy environment file if it exists (optional)
+COPY .env.local* ./ || true
 
 # Install TypeScript and ts-node for running the TypeScript script
 RUN npm install -g typescript ts-node @types/node
+# Install dotenv for environment variable loading
+RUN npm install dotenv
 
 # Compile TypeScript with proper settings (override noEmit)
 RUN npx tsc scripts/mock-data-generator.ts --outDir dist --target es2020 --module commonjs --esModuleInterop --skipLibCheck --declaration false --removeComments

@@ -2,13 +2,29 @@
 // This script generates realistic sensor readings for active sessions
 
 import { createClient } from "@supabase/supabase-js";
+import { config } from "dotenv";
+import { join } from "path";
 
-const supabaseUrl =
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  "https://nicapthbnchhnjsmzupf.supabase.co";
-const supabaseServiceKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pY2FwdGhibmNoaG5qc216dXBmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODE2OTI1MSwiZXhwIjoyMDczNzQ1MjUxfQ._eyi6ZjUy-XHgPO0l7PBQ5WcxwI9l4gPgD9onomQSBQ";
+// Load environment variables from .env.local (Next.js convention) if it exists
+try {
+  config({ path: join(__dirname, "../.env.local") });
+} catch (error) {
+  // .env.local file not found, that's okay - we'll use process env vars
+  console.log("No .env.local file found, using environment variables");
+}
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl) {
+  console.error("Missing NEXT_PUBLIC_SUPABASE_URL environment variable");
+  process.exit(1);
+}
+
+if (!supabaseServiceKey) {
+  console.error("Missing SUPABASE_SERVICE_ROLE_KEY environment variable");
+  process.exit(1);
+}
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
